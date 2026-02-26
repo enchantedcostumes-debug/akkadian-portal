@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Tammy L Casey">
+    <meta name="copyright" content="Copyright 2026 Tammy L Casey. All rights reserved.">
+    <meta name="motto" content="Known by our fruits - not our roots">
+    <title>AKKADIAN - Language of Empires | Ozark Oracle</title>
+    <meta name="description" content="Explore the Akkadian language - lingua franca of the ancient Near East. 9,817 texts, 555 lexicon entries, sacred texts including Enuma Elish and Epic of Gilgamesh.">
+    <link rel="stylesheet" href="quantum-theme.css">
+    <link rel="stylesheet" href="nav.css">
+    <link rel="stylesheet" href="mobile.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Cuneiform&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="stylesheet-akkadian.css">
+</head>
+<body>
+<script src="load_nav.js"></script>
+
+<main id="main-content" class="page-container">
+    <div class="page-header">
+        <div class="cuneiform-glyph-lg">&#x12000; &#x1202D; &#x12157;</div>
+        <h1 class="text-gold">AKKADIAN</h1>
+        <p class="text-silver">Language of Empires - From Sargon to Nebuchadnezzar</p>
+    </div>
+
+    <div class="stats-grid" id="stats-bar">
+        <div class="stat-box">
+            <div class="stat-value text-gold" id="stat-texts">9,817</div>
+            <div class="stat-label">Texts</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value text-gold" id="stat-words">555</div>
+            <div class="stat-label">Lexicon Words</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value text-gold" id="stat-sacred">932</div>
+            <div class="stat-label">Sacred Texts</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value text-gold" id="stat-tokens">755,490</div>
+            <div class="stat-label">Word Tokens</div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('lexicon', this)">Lexicon</button>
+        <button class="tab-btn" onclick="showTab('texts', this)">Texts</button>
+        <button class="tab-btn" onclick="showTab('sacred', this)">Sacred Texts</button>
+        <button class="tab-btn" onclick="showTab('concordance', this)">Concordance</button>
+        <button class="tab-btn" onclick="showTab('about', this)">About</button>
+    </div>
+
+    <!-- TAB: Lexicon -->
+    <div id="tab-lexicon" class="tab-content active">
+        <div class="search-container">
+            <input type="text" class="search-box" id="lex-search" placeholder="Search Akkadian words... (e.g. ilu, sharru, apsu)" oninput="debounceLex()">
+        </div>
+        <div class="results-area" id="lex-results">
+            <p class="loading">Loading lexicon...</p>
+        </div>
+        <div class="pagination" id="lex-pagination"></div>
+    </div>
+
+    <!-- TAB: Texts -->
+    <div id="tab-texts" class="tab-content">
+        <h2 class="text-gold">Akkadian Text Corpus</h2>
+        <div class="filter-row">
+            <select id="txt-period" onchange="loadTexts()"><option value="">All Periods</option></select>
+            <select id="txt-genre" onchange="loadTexts()"><option value="">All Genres</option></select>
+            <input type="text" class="search-box" id="txt-search" placeholder="Search titles..." style="flex:2;" oninput="debounceTexts()">
+        </div>
+        <div id="text-results"><p class="loading">Loading texts...</p></div>
+        <div class="pagination" id="txt-pagination"></div>
+    </div>
+
+    <!-- TAB: Sacred Texts -->
+    <div id="tab-sacred" class="tab-content">
+        <h2 class="text-gold">Sacred and Literary Texts</h2>
+        <p class="text-silver">The great literary works of Mesopotamia preserved in Akkadian</p>
+        <div id="sacred-results"><p class="loading">Loading sacred texts...</p></div>
+    </div>
+
+    <!-- TAB: Concordance -->
+    <div id="tab-concordance" class="tab-content">
+        <h2 class="text-gold">Akkadian Word Concordance</h2>
+        <p class="text-silver">Search across the full corpus for word occurrences</p>
+        <div class="search-container">
+            <input type="text" class="search-box" id="conc-search" placeholder="Search concordance... (e.g. sharru, ilu)" onkeydown="if(event.key==='Enter')searchConc()">
+        </div>
+        <div id="conc-results"><p class="loading">Enter a word to search</p></div>
+    </div>
+
+    <!-- TAB: About -->
+    <div id="tab-about" class="tab-content">
+        <div class="panel">
+            <h3 class="text-gold">About the Akkadian Language</h3>
+            <p class="text-silver">Akkadian (lisan Akkadim) was a Semitic language spoken in ancient Mesopotamia from roughly 2800 BCE to 100 CE -- making it one of the longest-attested languages in human history. It served as the lingua franca of the ancient Near East for over two millennia, used in diplomacy from Egypt to Anatolia to Iran.</p>
+            <p class="text-silver" style="margin-top:1rem;">Written in cuneiform script borrowed from Sumerian, Akkadian split into two major dialects: <span class="text-gold">Babylonian</span> (southern Mesopotamia) and <span class="text-gold">Assyrian</span> (northern Mesopotamia). The greatest works of Mesopotamian literature -- the Epic of Gilgamesh, the Enuma Elish creation epic, the Atrahasis flood story -- were composed or preserved in Akkadian.</p>
+            <p class="text-silver" style="margin-top:1rem;">This corpus contains <span class="text-gold">9,817 Akkadian texts</span> from the Open Richly Annotated Cuneiform Corpus (ORACC), spanning from Old Akkadian through Neo-Babylonian periods. The lexicon draws from the Electronic Pennsylvania Sumerian Dictionary (ePSD2) and curated scholarly sources.</p>
+        </div>
+        <div class="panel" style="margin-top:1rem;">
+            <h3 class="text-gold">Akkadian Dialects in This Corpus</h3>
+            <div id="dialect-bars"><p class="loading">Loading...</p></div>
+        </div>
+        <div class="panel" style="margin-top:1rem;">
+            <p class="text-silver" style="font-size:0.85rem;">Data: ORACC (CC BY-SA 3.0) | Platform: Ozark Oracle | Copyright 2026 Tammy L Casey</p>
+        </div>
+    </div>
+</main>
+
+<script>
+const API = 'https://enchantedozarks.com/api/akkadian';
+let lexTimeout = null;
+let txtTimeout = null;
+let lexPage = 1;
+let txtPage = 1;
+let tabsLoaded = {};
+
+function showTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+    if (!tabsLoaded[tabId]) {
+        tabsLoaded[tabId] = true;
+        if (tabId === 'texts') { loadTextFilters(); loadTexts(); }
+        if (tabId === 'sacred') loadSacred();
+        if (tabId === 'about') loadDialects();
+    }
+}
+
+// Lexicon
+function debounceLex() { clearTimeout(lexTimeout); lexTimeout = setTimeout(function(){ lexPage=1; loadLexicon(); }, 300); }
+
+async function loadLexicon(page) {
+    if (page) lexPage = page;
+    const area = document.getElementById('lex-results');
+    const q = document.getElementById('lex-search').value.trim();
+    area.innerHTML = '<p class="loading">Loading...</p>';
+    try {
+        let url = API + '/lexicon?page=' + lexPage + '&per_page=30';
+        if (q) url += '&q=' + encodeURIComponent(q);
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const words = data.words || data.results || [];
+        const total = data.total || 0;
+        if (words.length === 0) {
+            area.innerHTML = '<p class="loading">No words found</p>';
+            document.getElementById('lex-pagination').innerHTML = '';
+            return;
+        }
+        let html = '';
+        words.forEach(w => {
+            html += '<div class="lex-item" onclick="showWord(\'' + esc(w.akkadian || w.word || '') + '\')">';
+            html += '<span class="lex-word">' + esc(w.akkadian || w.word || '') + '</span>';
+            html += '<span class="lex-gloss"> - ' + esc(w.english || w.gloss || '') + '</span>';
+            if (w.divine_signature) html += '<span class="lex-divine">Divine</span>';
+            if (w.semantic_category) html += '<span class="lex-cat">' + esc(w.semantic_category) + '</span>';
+            if (w.cuneiform) html += ' <span class="cuneiform-glyph" style="font-size:1.3rem;">' + w.cuneiform + '</span>';
+            let meta = [];
+            if (w.gematria_value) meta.push('Gematria: ' + w.gematria_value);
+            if (w.hebrew_cognate) meta.push('Hebrew: ' + w.hebrew_cognate);
+            if (meta.length) html += '<div class="lex-meta">' + meta.join(' | ') + '</div>';
+            html += '</div>';
+        });
+        area.innerHTML = html;
+        renderPagination('lex-pagination', total, 30, lexPage, 'loadLexicon');
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Could not load lexicon. API may be unavailable.</p>';
+    }
+}
+
+async function showWord(word) {
+    const area = document.getElementById('lex-results');
+    area.innerHTML = '<p class="loading">Loading word detail...</p>';
+    try {
+        const resp = await fetch(API + '/lexicon/' + encodeURIComponent(word));
+        const data = await resp.json();
+        if (!data.word && !data.akkadian) {
+            area.innerHTML = '<p class="error-msg">Word not found</p>';
+            return;
+        }
+        const w = data.word || data;
+        let html = '<div class="word-detail">';
+        html += '<div style="display:flex;align-items:center;gap:1rem;">';
+        if (w.cuneiform) html += '<span class="cuneiform-glyph-lg">' + w.cuneiform + '</span>';
+        html += '<div><h2>' + esc(w.akkadian || w.word) + '</h2>';
+        html += '<div class="gloss">' + esc(w.english || w.gloss || '') + '</div></div></div>';
+
+        let details = [];
+        if (w.hebrew_cognate) details.push(['Hebrew Cognate', w.hebrew_cognate]);
+        if (w.arabic_cognate) details.push(['Arabic Cognate', w.arabic_cognate]);
+        if (w.gematria_value) details.push(['Gematria Value', w.gematria_value]);
+        if (w.semantic_category) details.push(['Category', w.semantic_category]);
+        if (w.divine_signature) details.push(['Divine Signature', 'Yes']);
+
+        if (details.length) {
+            html += '<div style="margin-top:1rem;">';
+            details.forEach(([k,v]) => {
+                html += '<div style="display:flex;gap:1rem;padding:0.3rem 0;border-bottom:1px solid var(--glass-border-dim);">';
+                html += '<span style="color:var(--gold);width:140px;flex-shrink:0;">' + k + '</span>';
+                html += '<span style="color:var(--silver-light);">' + esc(String(v)) + '</span></div>';
+            });
+            html += '</div>';
+        }
+
+        if (w.concordance) {
+            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Corpus Occurrences</h3>';
+            html += '<p class="text-silver">' + (w.concordance.occurrence_count || 0).toLocaleString() + ' occurrences in ' + (w.concordance.tablet_count || 0).toLocaleString() + ' tablets</p>';
+        }
+
+        if (w.suggestions && w.suggestions.length) {
+            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Related Words</h3>';
+            w.suggestions.forEach(s => {
+                html += '<span class="lex-cat" style="cursor:pointer;margin:0.2rem;" onclick="showWord(\'' + esc(s.akkadian || s.word || '') + '\')">' + esc(s.akkadian || s.word) + '</span>';
+            });
+        }
+
+        html += '</div>';
+        html += '<button class="page-btn" onclick="loadLexicon()" style="margin-top:0.5rem;">&lt; Back to lexicon</button>';
+        area.innerHTML = html;
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Failed to load word</p>';
+    }
+}
+
+// Texts
+function debounceTexts() { clearTimeout(txtTimeout); txtTimeout = setTimeout(function(){ txtPage=1; loadTexts(); }, 400); }
+
+async function loadTextFilters() {
+    try {
+        const resp = await fetch(API + '/stats');
+        const data = await resp.json();
+        const periodSel = document.getElementById('txt-period');
+        const genreSel = document.getElementById('txt-genre');
+        if (data.corpus && data.corpus.by_period) {
+            Object.keys(data.corpus.by_period).sort().forEach(p => {
+                periodSel.innerHTML += '<option value="' + esc(p) + '">' + esc(p) + ' (' + data.corpus.by_period[p] + ')</option>';
+            });
+        }
+        if (data.corpus && data.corpus.by_genre) {
+            Object.keys(data.corpus.by_genre).sort().forEach(g => {
+                genreSel.innerHTML += '<option value="' + esc(g) + '">' + esc(g) + ' (' + data.corpus.by_genre[g] + ')</option>';
+            });
+        }
+    } catch(e) {}
+}
+
+async function loadTexts(page) {
+    if (page) txtPage = page; else if (!arguments.length) txtPage = 1;
+    const area = document.getElementById('text-results');
+    area.innerHTML = '<p class="loading">Loading texts...</p>';
+    try {
+        let url = API + '/texts?page=' + txtPage + '&per_page=25';
+        const period = document.getElementById('txt-period').value;
+        const genre = document.getElementById('txt-genre').value;
+        const q = document.getElementById('txt-search').value.trim();
+        if (period) url += '&period=' + encodeURIComponent(period);
+        if (genre) url += '&genre=' + encodeURIComponent(genre);
+        if (q) url += '&q=' + encodeURIComponent(q);
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const texts = data.texts || [];
+        const total = data.total || 0;
+        if (texts.length === 0) {
+            area.innerHTML = '<p class="loading">No texts found</p>';
+            document.getElementById('txt-pagination').innerHTML = '';
+            return;
+        }
+        let html = '<div class="text-row text-header"><span>Title</span><span>Period</span><span>Genre</span><span>Lines</span></div>';
+        texts.forEach(t => {
+            html += '<div class="text-row" onclick="viewText(\'' + esc(t.textid) + '\')">';
+            html += '<span class="text-title">' + esc(t.title || t.textid) + '</span>';
+            html += '<span class="text-meta">' + esc(t.period || '-') + '</span>';
+            html += '<span class="text-meta">' + esc(t.genre || '-') + '</span>';
+            html += '<span class="text-meta">' + (t.total_lines || 0) + '</span>';
+            html += '</div>';
+        });
+        area.innerHTML = html;
+        renderPagination('txt-pagination', total, 25, txtPage, 'loadTexts');
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Could not load texts</p>';
+    }
+}
+
+async function viewText(textid) {
+    const area = document.getElementById('text-results');
+    area.innerHTML = '<p class="loading">Loading text...</p>';
+    try {
+        const resp = await fetch(API + '/text/' + encodeURIComponent(textid));
+        const data = await resp.json();
+        const t = data.text || data;
+        let html = '<div class="word-detail">';
+        html += '<h2>' + esc(t.title || t.textid) + '</h2>';
+        html += '<div class="lex-meta" style="margin-bottom:1rem;">' + esc(t.period || '') + ' | ' + esc(t.genre || '') + ' | ' + esc(t.provenience || '') + '</div>';
+        if (t.lines && t.lines.length) {
+            html += '<div style="font-family:monospace;">';
+            t.lines.forEach(l => {
+                html += '<div style="display:flex;gap:1rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.03);">';
+                html += '<span style="color:var(--gold);width:60px;flex-shrink:0;font-size:0.8rem;">' + esc(l.line_label || '') + '</span>';
+                html += '<span style="color:var(--silver-light);font-size:0.9rem;">' + esc(l.transliteration || '') + '</span>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+        if (t.akkadian_words && t.akkadian_words.length) {
+            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Akkadian Words in This Text (' + t.akkadian_words.length + ')</h3>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">';
+            t.akkadian_words.forEach(w => {
+                html += '<span class="lex-cat" style="cursor:default;">' + esc(w) + '</span>';
+            });
+            html += '</div>';
+        }
+        html += '</div>';
+        html += '<button class="page-btn" onclick="loadTexts(' + txtPage + ')" style="margin-top:0.5rem;">&lt; Back to texts</button>';
+        area.innerHTML = html;
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Failed to load text</p>';
+    }
+}
+
+// Sacred texts
+async function loadSacred() {
+    const area = document.getElementById('sacred-results');
+    area.innerHTML = '<p class="loading">Loading sacred texts...</p>';
+    try {
+        const resp = await fetch(API + '/sacred-texts');
+        const data = await resp.json();
+        const groups = data.sacred_texts || data.categories || [];
+        if (Array.isArray(groups) && groups.length === 0) {
+            area.innerHTML = '<p class="loading">No sacred texts found</p>';
+            return;
+        }
+        let html = '';
+        // If it's grouped by category
+        if (data.categories) {
+            Object.entries(data.categories).forEach(([cat, texts]) => {
+                html += '<div class="sacred-card">';
+                html += '<h3>' + esc(cat.replace(/_/g, ' ').toUpperCase()) + '</h3>';
+                html += '<p><span class="sacred-count">' + texts.length + '</span> texts</p>';
+                html += '<div style="margin-top:0.8rem;max-height:200px;overflow-y:auto;">';
+                texts.slice(0, 20).forEach(t => {
+                    html += '<div style="padding:0.3rem 0;border-bottom:1px solid var(--glass-border-dim);cursor:pointer;" onclick="viewText(\'' + esc(t.textid) + '\')">';
+                    html += '<span class="text-title">' + esc(t.title || t.textid) + '</span>';
+                    html += '<span class="text-meta" style="margin-left:0.5rem;">' + esc(t.period || '') + '</span>';
+                    html += '</div>';
+                });
+                if (texts.length > 20) html += '<p class="text-meta">... and ' + (texts.length - 20) + ' more</p>';
+                html += '</div></div>';
+            });
+        } else {
+            // Flat list
+            groups.forEach(t => {
+                html += '<div class="sacred-card" onclick="viewText(\'' + esc(t.textid) + '\')">';
+                html += '<h3>' + esc(t.title || t.textid) + '</h3>';
+                html += '<p>' + esc(t.period || '') + ' | ' + esc(t.genre || '') + '</p>';
+                html += '</div>';
+            });
+        }
+        area.innerHTML = html;
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Could not load sacred texts</p>';
+    }
+}
+
+// Concordance
+async function searchConc() {
+    const q = document.getElementById('conc-search').value.trim();
+    if (!q) return;
+    const area = document.getElementById('conc-results');
+    area.innerHTML = '<p class="loading">Searching...</p>';
+    try {
+        const resp = await fetch(API + '/concordance?q=' + encodeURIComponent(q));
+        const data = await resp.json();
+        const results = data.results || [];
+        if (results.length === 0) {
+            area.innerHTML = '<p class="loading">No results for "' + esc(q) + '"</p>';
+            return;
+        }
+        let html = '';
+        results.forEach(r => {
+            html += '<div class="word-detail" style="margin-bottom:1rem;">';
+            html += '<h2 style="margin:0;">' + esc(r.lemma) + '</h2>';
+            html += '<div class="gloss">' + esc(r.gloss || '') + '</div>';
+            html += '<div class="stats-grid" style="margin:0.5rem 0;">';
+            html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.occurrence_count||0).toLocaleString() + '</div><div class="stat-label">Occurrences</div></div>';
+            html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.tablet_count||0).toLocaleString() + '</div><div class="stat-label">Tablets</div></div>';
+            html += '</div>';
+            let periods = {};
+            try { periods = JSON.parse(r.periods || '{}'); } catch(e) {}
+            let maxC = Math.max(...Object.values(periods), 1);
+            Object.entries(periods).sort((a,b) => b[1]-a[1]).slice(0,6).forEach(([p,c]) => {
+                html += '<div class="period-bar"><span class="period-label">' + esc(p) + '</span>';
+                html += '<div class="period-fill" style="width:' + Math.round(c/maxC*100) + '%;"></div>';
+                html += '<span class="period-count">' + c.toLocaleString() + '</span></div>';
+            });
+            html += '</div>';
+        });
+        area.innerHTML = html;
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Concordance search failed</p>';
+    }
+}
+
+// Dialect distribution
+async function loadDialects() {
+    const area = document.getElementById('dialect-bars');
+    try {
+        const resp = await fetch(API + '/stats');
+        const data = await resp.json();
+        if (data.corpus && data.corpus.by_language) {
+            let langs = data.corpus.by_language;
+            let maxC = Math.max(...Object.values(langs), 1);
+            let html = '';
+            Object.entries(langs).sort((a,b) => b[1]-a[1]).forEach(([lang, count]) => {
+                let label = lang.replace('akk-x-', '').replace('akk', 'Akkadian (general)');
+                html += '<div class="period-bar"><span class="period-label">' + esc(label) + '</span>';
+                html += '<div class="period-fill" style="width:' + Math.round(count/maxC*100) + '%;"></div>';
+                html += '<span class="period-count">' + count.toLocaleString() + ' texts</span></div>';
+            });
+            area.innerHTML = html;
+        }
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Could not load dialect data</p>';
+    }
+}
+
+// Shared pagination renderer
+function renderPagination(containerId, total, perPage, currentPage, fnName) {
+    const totalPages = Math.ceil(total / perPage);
+    let html = '';
+    if (totalPages > 1) {
+        if (currentPage > 1) html += '<button class="page-btn" onclick="' + fnName + '(' + (currentPage-1) + ')">&lt;</button>';
+        html += '<span class="page-btn active">' + currentPage + ' / ' + totalPages + ' (' + total.toLocaleString() + ')</span>';
+        if (currentPage < totalPages) html += '<button class="page-btn" onclick="' + fnName + '(' + (currentPage+1) + ')">&gt;</button>';
+    }
+    document.getElementById(containerId).innerHTML = html;
+}
+
+// Load stats
+async function loadStats() {
+    try {
+        const resp = await fetch(API + '/stats');
+        const data = await resp.json();
+        if (data.lexicon) document.getElementById('stat-words').textContent = (data.lexicon.total || 555).toLocaleString();
+        if (data.corpus) {
+            document.getElementById('stat-texts').textContent = (data.corpus.total_texts || 9817).toLocaleString();
+            if (data.corpus.total_akkadian_words) document.getElementById('stat-tokens').textContent = data.corpus.total_akkadian_words.toLocaleString();
+        }
+        if (data.sacred_texts) document.getElementById('stat-sacred').textContent = (data.sacred_texts.total || 932).toLocaleString();
+    } catch(e) { /* use defaults */ }
+}
+
+function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Initial load
+loadStats();
+tabsLoaded['lexicon'] = true;
+loadLexicon();
+</script>
+</body>
+</html>

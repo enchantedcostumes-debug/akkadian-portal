@@ -1,0 +1,53 @@
+/**
+ * Akkadian Language Portal - Stylesheet
+ * For akkadian.ozark-oracle.com
+ * Copyright (c) 2026 Tammy L Casey. All rights reserved.
+ */
+.cuneiform-glyph { font-size: 2rem; color: var(--gold); }
+.cuneiform-glyph-lg { font-size: 3.5rem; color: var(--gold); }
+.tab-bar { display: flex; gap: 0; border-bottom: 2px solid var(--glass-border-dim); margin-bottom: 1.5rem; overflow-x: auto; }
+.tab-btn { padding: 0.7rem 1.2rem; background: none; border: none; color: var(--silver-dark); cursor: pointer; font-size: 0.95rem; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+.tab-btn:hover { color: var(--silver-light); }
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.search-container { max-width: 600px; margin: 1.5rem auto; }
+.search-box { width: 100%; padding: 0.8rem 1.2rem; background: var(--black-card); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--silver-light); font-size: 1rem; outline: none; box-sizing: border-box; }
+.search-box:focus { border-color: var(--gold); }
+.search-box::placeholder { color: var(--silver-dark); }
+.results-area { margin-top: 1rem; min-height: 200px; }
+.lex-item { background: var(--black-card); border: 1px solid var(--glass-border-dim); border-radius: 6px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; cursor: pointer; transition: border-color 0.2s; }
+.lex-item:hover { border-color: var(--gold); }
+.lex-word { color: var(--gold); font-weight: bold; font-size: 1.1rem; }
+.lex-gloss { color: var(--silver-light); margin-left: 0.5rem; }
+.lex-meta { color: var(--silver-dark); font-size: 0.85rem; margin-top: 0.3rem; }
+.lex-divine { display: inline-block; background: rgba(212,175,55,0.15); color: var(--gold); padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.75rem; margin-left: 0.5rem; }
+.lex-cat { display: inline-block; background: rgba(192,192,192,0.1); color: var(--silver); padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.75rem; margin-left: 0.3rem; }
+.word-detail { background: var(--black-panel); border: 1px solid var(--glass-border); border-radius: 8px; padding: 2rem; margin: 1rem 0; }
+.word-detail h2 { color: var(--gold); margin: 0 0 0.5rem; }
+.word-detail .gloss { color: var(--silver-light); font-size: 1.2rem; margin-bottom: 1rem; }
+.sacred-card { background: var(--black-card); border: 1px solid var(--glass-border-dim); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
+.sacred-card:hover { border-color: var(--gold); }
+.sacred-card h3 { color: var(--gold); margin: 0 0 0.5rem; }
+.sacred-card p { color: var(--silver); margin: 0; font-size: 0.9rem; }
+.sacred-count { color: var(--gold); font-weight: bold; }
+.text-row { display: grid; grid-template-columns: 2fr 1fr 1fr 0.5fr; gap: 1rem; padding: 0.7rem 0.5rem; border-bottom: 1px solid var(--glass-border-dim); align-items: center; }
+.text-row:hover { background: rgba(212,175,55,0.05); cursor: pointer; }
+.text-header { color: var(--gold); font-weight: bold; font-size: 0.85rem; }
+.text-title { color: var(--silver-light); font-size: 0.95rem; }
+.text-meta { color: var(--silver-dark); font-size: 0.85rem; }
+.pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+.page-btn { padding: 0.4rem 0.8rem; background: var(--black-card); border: 1px solid var(--glass-border-dim); border-radius: 4px; color: var(--silver); cursor: pointer; }
+.page-btn:hover, .page-btn.active { border-color: var(--gold); color: var(--gold); }
+.loading { color: var(--silver-dark); text-align: center; padding: 2rem; }
+.error-msg { color: var(--error); text-align: center; padding: 1rem; }
+.period-bar { display: flex; align-items: center; margin: 0.3rem 0; }
+.period-label { color: var(--silver); font-size: 0.85rem; width: 160px; flex-shrink: 0; }
+.period-fill { height: 18px; background: var(--gold); border-radius: 3px; min-width: 2px; }
+.period-count { color: var(--silver-dark); font-size: 0.8rem; margin-left: 0.5rem; }
+.filter-row { display: flex; gap: 1rem; margin: 1rem 0; flex-wrap: wrap; }
+.filter-row select { padding: 0.5rem; background: var(--black-card); border: 1px solid var(--glass-border); border-radius: 6px; color: var(--silver-light); font-size: 0.9rem; min-width: 150px; flex: 1; }
+@media (max-width: 768px) {
+    .text-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    .filter-row { flex-direction: column; }
+}
