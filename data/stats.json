@@ -1,0 +1,221 @@
+{
+  "lexicon": {
+    "total_words": 555,
+    "categories": {
+      "core": 555
+    },
+    "divine_words": 250
+  },
+  "corpus": {
+    "total_texts": 9817,
+    "total_lines": 194441,
+    "total_words": 857486,
+    "akkadian_word_tokens": 755490,
+    "language_variants": {
+      "akk": 246210,
+      "akk-x-stdbab": 165216,
+      "akk-x-ltebab": 130637,
+      "akk-x-neoass": 112272,
+      "akk-x-neobab": 75887,
+      "akk-x-mbperi": 13611,
+      "akk-x-oldbab": 9794,
+      "akk-949": 1071,
+      "akk-x-stdbab-949": 618,
+      "akk-x-earakk": 84,
+      "akk-x-mbperi-949": 80,
+      "akk-x-oldbab-949": 5,
+      "akk-x-oldakk": 5
+    },
+    "corpora": {
+      "admin_oakk": {
+        "text_count": 5412,
+        "line_count": 66731,
+        "word_count": 174236
+      },
+      "babylonian_literary": {
+        "text_count": 205,
+        "line_count": 8770,
+        "word_count": 41881
+      },
+      "gilgamesh_scholarly": {
+        "text_count": 466,
+        "line_count": 15139,
+        "word_count": 94192
+      },
+      "hellenistic_babylon": {
+        "text_count": 484,
+        "line_count": 20815,
+        "word_count": 123644
+      },
+      "ludlul": {
+        "text_count": 54,
+        "line_count": 2123,
+        "word_count": 8596
+      },
+      "ribo_neo_babylon": {
+        "text_count": 214,
+        "line_count": 10332,
+        "word_count": 39894
+      },
+      "ribo_old_babylon": {
+        "text_count": 38,
+        "line_count": 764,
+        "word_count": 3682
+      },
+      "rinap_ashurbanipal": {
+        "text_count": 344,
+        "line_count": 14171,
+        "word_count": 73514
+      },
+      "rinap_esarhaddon": {
+        "text_count": 178,
+        "line_count": 6089,
+        "word_count": 28829
+      },
+      "rinap_sennacherib": {
+        "text_count": 238,
+        "line_count": 7166,
+        "word_count": 45639
+      },
+      "rinap_tiglath_pileser": {
+        "text_count": 85,
+        "line_count": 1317,
+        "word_count": 11273
+      },
+      "saa_astrology": {
+        "text_count": 567,
+        "line_count": 6492,
+        "word_count": 33725
+      },
+      "saa_correspondence": {
+        "text_count": 246,
+        "line_count": 4309,
+        "word_count": 23719
+      },
+      "saa_letters_sargon": {
+        "text_count": 264,
+        "line_count": 5532,
+        "word_count": 25390
+      },
+      "saa_letters_sargon2": {
+        "text_count": 15,
+        "line_count": 1741,
+        "word_count": 11824
+      },
+      "saa_neo_babylonian": {
+        "text_count": 203,
+        "line_count": 4583,
+        "word_count": 28968
+      },
+      "saa_priests": {
+        "text_count": 210,
+        "line_count": 4467,
+        "word_count": 18564
+      },
+      "saa_rituals": {
+        "text_count": 207,
+        "line_count": 4722,
+        "word_count": 29108
+      },
+      "saa_scholars": {
+        "text_count": 387,
+        "line_count": 9178,
+        "word_count": 40808
+      }
+    },
+    "periods": {
+      "Old Akkadian": 5398,
+      "Ur III": 2,
+      "Early Dynastic IIIa": 1,
+      "Old Babylonian": 4,
+      "Unknown": 10,
+      "Neo-Babylonian": 281,
+      "Neo-Assyrian": 3214,
+      "Hellenistic": 552,
+      "Middle Assyrian": 2,
+      "Middle Babylonian": 30,
+      "Seleucid": 179,
+      "Achaemenid": 91,
+      "Uncertain": 35,
+      "Standard Babylonian": 6
+    },
+    "genres": {
+      "Administrative": 5184,
+      "Letter": 66,
+      "Legal": 605,
+      "Lexical": 9,
+      "Literary": 135,
+      "Royal Inscription": 1103,
+      "Royal/Monumental": 2,
+      "Prayer/Incantation": 40,
+      "Ritual": 63,
+      "Omen": 118,
+      "Mathematical": 12,
+      "Scholarly": 11,
+      "Incantation-Ritual": 73,
+      "Historical": 6,
+      "Hymn-Prayer": 18,
+      "Medical": 36,
+      "Hemerological": 16,
+      "Astronomical": 29,
+      "School": 5,
+      "Uncertain": 7,
+      "Astrological": 11,
+      "Astrological Report": 566,
+      "Administrative Letter": 920,
+      "Treaty": 15,
+      "Priestly Letter": 210,
+      "Scholarly Letter": 387
+    }
+  },
+  "concordance": {
+    "total_lemmas": 48080
+  },
+  "filters": {
+    "periods": [
+      "Achaemenid",
+      "Early Dynastic IIIa",
+      "Hellenistic",
+      "Middle Assyrian",
+      "Middle Babylonian",
+      "Neo-Assyrian",
+      "Neo-Babylonian",
+      "Old Akkadian",
+      "Old Babylonian",
+      "Seleucid",
+      "Standard Babylonian",
+      "Uncertain",
+      "Unknown",
+      "Ur III"
+    ],
+    "genres": [
+      "Administrative",
+      "Administrative Letter",
+      "Astrological",
+      "Astrological Report",
+      "Astronomical",
+      "Hemerological",
+      "Historical",
+      "Hymn-Prayer",
+      "Incantation-Ritual",
+      "Legal",
+      "Letter",
+      "Lexical",
+      "Literary",
+      "Mathematical",
+      "Medical",
+      "Omen",
+      "Prayer/Incantation",
+      "Priestly Letter",
+      "Ritual",
+      "Royal Inscription",
+      "Royal/Monumental",
+      "Scholarly",
+      "Scholarly Letter",
+      "School",
+      "Treaty",
+      "Uncertain"
+    ]
+  },
+  "generated": "2026-02-26T19:40:33Z"
+}

@@ -112,16 +112,21 @@
 </main>
 
 <script>
-const API = 'https://www.enchantedozarks.com/api/akkadian';
-let lexTimeout = null;
-let txtTimeout = null;
-let lexPage = 1;
-let txtPage = 1;
-let tabsLoaded = {};
+/* All data pre-built as static JSON (same pattern as Mechanical Bible) */
+var lexiconData = [];
+var textsData = [];
+var sacredData = null;
+var concordanceData = [];
+var statsData = null;
+var lexTimeout = null;
+var txtTimeout = null;
+var lexPage = 1;
+var txtPage = 1;
+var tabsLoaded = {};
 
 function showTab(tabId, btn) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById('tab-' + tabId).classList.add('active');
     btn.classList.add('active');
     if (!tabsLoaded[tabId]) {
@@ -132,306 +137,14 @@ function showTab(tabId, btn) {
     }
 }
 
-// Lexicon
-function debounceLex() { clearTimeout(lexTimeout); lexTimeout = setTimeout(function(){ lexPage=1; loadLexicon(); }, 300); }
-
-async function loadLexicon(page) {
-    if (page) lexPage = page;
-    const area = document.getElementById('lex-results');
-    const q = document.getElementById('lex-search').value.trim();
-    area.innerHTML = '<p class="loading">Loading...</p>';
-    try {
-        let url = API + '/lexicon?page=' + lexPage + '&per_page=30';
-        if (q) url += '&q=' + encodeURIComponent(q);
-        const resp = await fetch(url);
-        const data = await resp.json();
-        const words = data.words || data.results || [];
-        const total = data.total || 0;
-        if (words.length === 0) {
-            area.innerHTML = '<p class="loading">No words found</p>';
-            document.getElementById('lex-pagination').innerHTML = '';
-            return;
-        }
-        let html = '';
-        words.forEach(w => {
-            html += '<div class="lex-item" onclick="showWord(\'' + esc(w.akkadian || w.word || '') + '\')">';
-            html += '<span class="lex-word">' + esc(w.akkadian || w.word || '') + '</span>';
-            html += '<span class="lex-gloss"> - ' + esc(w.english || w.gloss || '') + '</span>';
-            if (w.divine_signature) html += '<span class="lex-divine">Divine</span>';
-            if (w.semantic_category) html += '<span class="lex-cat">' + esc(w.semantic_category) + '</span>';
-            if (w.cuneiform) html += ' <span class="cuneiform-glyph" style="font-size:1.3rem;">' + w.cuneiform + '</span>';
-            let meta = [];
-            if (w.gematria_value) meta.push('Gematria: ' + w.gematria_value);
-            if (w.hebrew_cognate) meta.push('Hebrew: ' + w.hebrew_cognate);
-            if (meta.length) html += '<div class="lex-meta">' + meta.join(' | ') + '</div>';
-            html += '</div>';
-        });
-        area.innerHTML = html;
-        renderPagination('lex-pagination', total, 30, lexPage, 'loadLexicon');
-    } catch(e) {
-        area.innerHTML = '<p class="error-msg">Could not load lexicon. API may be unavailable.</p>';
-    }
+function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-async function showWord(word) {
-    const area = document.getElementById('lex-results');
-    area.innerHTML = '<p class="loading">Loading word detail...</p>';
-    try {
-        const resp = await fetch(API + '/lexicon/' + encodeURIComponent(word));
-        const data = await resp.json();
-        if (!data.word && !data.akkadian) {
-            area.innerHTML = '<p class="error-msg">Word not found</p>';
-            return;
-        }
-        const w = data.word || data;
-        let html = '<div class="word-detail">';
-        html += '<div style="display:flex;align-items:center;gap:1rem;">';
-        if (w.cuneiform) html += '<span class="cuneiform-glyph-lg">' + w.cuneiform + '</span>';
-        html += '<div><h2>' + esc(w.akkadian || w.word) + '</h2>';
-        html += '<div class="gloss">' + esc(w.english || w.gloss || '') + '</div></div></div>';
-
-        let details = [];
-        if (w.hebrew_cognate) details.push(['Hebrew Cognate', w.hebrew_cognate]);
-        if (w.arabic_cognate) details.push(['Arabic Cognate', w.arabic_cognate]);
-        if (w.gematria_value) details.push(['Gematria Value', w.gematria_value]);
-        if (w.semantic_category) details.push(['Category', w.semantic_category]);
-        if (w.divine_signature) details.push(['Divine Signature', 'Yes']);
-
-        if (details.length) {
-            html += '<div style="margin-top:1rem;">';
-            details.forEach(([k,v]) => {
-                html += '<div style="display:flex;gap:1rem;padding:0.3rem 0;border-bottom:1px solid var(--glass-border-dim);">';
-                html += '<span style="color:var(--gold);width:140px;flex-shrink:0;">' + k + '</span>';
-                html += '<span style="color:var(--silver-light);">' + esc(String(v)) + '</span></div>';
-            });
-            html += '</div>';
-        }
-
-        if (w.concordance) {
-            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Corpus Occurrences</h3>';
-            html += '<p class="text-silver">' + (w.concordance.occurrence_count || 0).toLocaleString() + ' occurrences in ' + (w.concordance.tablet_count || 0).toLocaleString() + ' tablets</p>';
-        }
-
-        if (w.suggestions && w.suggestions.length) {
-            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Related Words</h3>';
-            w.suggestions.forEach(s => {
-                html += '<span class="lex-cat" style="cursor:pointer;margin:0.2rem;" onclick="showWord(\'' + esc(s.akkadian || s.word || '') + '\')">' + esc(s.akkadian || s.word) + '</span>';
-            });
-        }
-
-        html += '</div>';
-        html += '<button class="page-btn" onclick="loadLexicon()" style="margin-top:0.5rem;">&lt; Back to lexicon</button>';
-        area.innerHTML = html;
-    } catch(e) {
-        area.innerHTML = '<p class="error-msg">Failed to load word</p>';
-    }
-}
-
-// Texts
-function debounceTexts() { clearTimeout(txtTimeout); txtTimeout = setTimeout(function(){ txtPage=1; loadTexts(); }, 400); }
-
-async function loadTextFilters() {
-    try {
-        const resp = await fetch(API + '/stats');
-        const data = await resp.json();
-        const periodSel = document.getElementById('txt-period');
-        const genreSel = document.getElementById('txt-genre');
-        if (data.corpus && data.corpus.by_period) {
-            Object.keys(data.corpus.by_period).sort().forEach(p => {
-                periodSel.innerHTML += '<option value="' + esc(p) + '">' + esc(p) + ' (' + data.corpus.by_period[p] + ')</option>';
-            });
-        }
-        if (data.corpus && data.corpus.by_genre) {
-            Object.keys(data.corpus.by_genre).sort().forEach(g => {
-                genreSel.innerHTML += '<option value="' + esc(g) + '">' + esc(g) + ' (' + data.corpus.by_genre[g] + ')</option>';
-            });
-        }
-    } catch(e) {}
-}
-
-async function loadTexts(page) {
-    if (page) txtPage = page; else if (!arguments.length) txtPage = 1;
-    const area = document.getElementById('text-results');
-    area.innerHTML = '<p class="loading">Loading texts...</p>';
-    try {
-        let url = API + '/texts?page=' + txtPage + '&per_page=25';
-        const period = document.getElementById('txt-period').value;
-        const genre = document.getElementById('txt-genre').value;
-        const q = document.getElementById('txt-search').value.trim();
-        if (period) url += '&period=' + encodeURIComponent(period);
-        if (genre) url += '&genre=' + encodeURIComponent(genre);
-        if (q) url += '&q=' + encodeURIComponent(q);
-        const resp = await fetch(url);
-        const data = await resp.json();
-        const texts = data.texts || [];
-        const total = data.total || 0;
-        if (texts.length === 0) {
-            area.innerHTML = '<p class="loading">No texts found</p>';
-            document.getElementById('txt-pagination').innerHTML = '';
-            return;
-        }
-        let html = '<div class="text-row text-header"><span>Title</span><span>Period</span><span>Genre</span><span>Lines</span></div>';
-        texts.forEach(t => {
-            html += '<div class="text-row" onclick="viewText(\'' + esc(t.textid) + '\')">';
-            html += '<span class="text-title">' + esc(t.title || t.textid) + '</span>';
-            html += '<span class="text-meta">' + esc(t.period || '-') + '</span>';
-            html += '<span class="text-meta">' + esc(t.genre || '-') + '</span>';
-            html += '<span class="text-meta">' + (t.total_lines || 0) + '</span>';
-            html += '</div>';
-        });
-        area.innerHTML = html;
-        renderPagination('txt-pagination', total, 25, txtPage, 'loadTexts');
-    } catch(e) {
-        area.innerHTML = '<p class="error-msg">Could not load texts</p>';
-    }
-}
-
-async function viewText(textid) {
-    const area = document.getElementById('text-results');
-    area.innerHTML = '<p class="loading">Loading text...</p>';
-    try {
-        const resp = await fetch(API + '/text/' + encodeURIComponent(textid));
-        const data = await resp.json();
-        const t = data.text || data;
-        let html = '<div class="word-detail">';
-        html += '<h2>' + esc(t.title || t.textid) + '</h2>';
-        html += '<div class="lex-meta" style="margin-bottom:1rem;">' + esc(t.period || '') + ' | ' + esc(t.genre || '') + ' | ' + esc(t.provenience || '') + '</div>';
-        if (t.lines && t.lines.length) {
-            html += '<div style="font-family:monospace;">';
-            t.lines.forEach(l => {
-                html += '<div style="display:flex;gap:1rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.03);">';
-                html += '<span style="color:var(--gold);width:60px;flex-shrink:0;font-size:0.8rem;">' + esc(l.line_label || '') + '</span>';
-                html += '<span style="color:var(--silver-light);font-size:0.9rem;">' + esc(l.transliteration || '') + '</span>';
-                html += '</div>';
-            });
-            html += '</div>';
-        }
-        if (t.akkadian_words && t.akkadian_words.length) {
-            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Akkadian Words in This Text (' + t.akkadian_words.length + ')</h3>';
-            html += '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">';
-            t.akkadian_words.forEach(w => {
-                html += '<span class="lex-cat" style="cursor:default;">' + esc(w) + '</span>';
-            });
-            html += '</div>';
-        }
-        html += '</div>';
-        html += '<button class="page-btn" onclick="loadTexts(' + txtPage + ')" style="margin-top:0.5rem;">&lt; Back to texts</button>';
-        area.innerHTML = html;
-    } catch(e) {
-        area.innerHTML = '<p class="error-msg">Failed to load text</p>';
-    }
-}
-
-// Sacred texts
-async function loadSacred() {
-    const area = document.getElementById('sacred-results');
-    area.innerHTML = '<p class="loading">Loading sacred texts...</p>';
-    try {
-        const resp = await fetch(API + '/sacred-texts');
-        const data = await resp.json();
-        const groups = data.sacred_texts || data.categories || [];
-        if (Array.isArray(groups) && groups.length === 0) {
-            area.innerHTML = '<p class="loading">No sacred texts found</p>';
-            return;
-        }
-        let html = '';
-        // If it's grouped by category
-        if (data.categories) {
-            Object.entries(data.categories).forEach(([cat, texts]) => {
-                html += '<div class="sacred-card">';
-                html += '<h3>' + esc(cat.replace(/_/g, ' ').toUpperCase()) + '</h3>';
-                html += '<p><span class="sacred-count">' + texts.length + '</span> texts</p>';
-                html += '<div style="margin-top:0.8rem;max-height:200px;overflow-y:auto;">';
-                texts.slice(0, 20).forEach(t => {
-                    html += '<div style="padding:0.3rem 0;border-bottom:1px solid var(--glass-border-dim);cursor:pointer;" onclick="viewText(\'' + esc(t.textid) + '\')">';
-                    html += '<span class="text-title">' + esc(t.title || t.textid) + '</span>';
-                    html += '<span class="text-meta" style="margin-left:0.5rem;">' + esc(t.period || '') + '</span>';
-                    html += '</div>';
-                });
-                if (texts.length > 20) html += '<p class="text-meta">... and ' + (texts.length - 20) + ' more</p>';
-                html += '</div></div>';
-            });
-        } else {
-            // Flat list
-            groups.forEach(t => {
-                html += '<div class="sacred-card" onclick="viewText(\'' + esc(t.textid) + '\')">';
-                html += '<h3>' + esc(t.title || t.textid) + '</h3>';
-                html += '<p>' + esc(t.period || '') + ' | ' + esc(t.genre || '') + '</p>';
-                html += '</div>';
-            });
-        }
-        area.innerHTML = html;
-    } catch(e) {
-        area.innerHTML = '<p class="error-msg">Could not load sacred texts</p>';
-    }
-}
-
-// Concordance
-async function searchConc() {
-    const q = document.getElementById('conc-search').value.trim();
-    if (!q) return;
-    const area = document.getElementById('conc-results');
-    area.innerHTML = '<p class="loading">Searching...</p>';
-    try {
-        const resp = await fetch(API + '/concordance?q=' + encodeURIComponent(q));
-        const data = await resp.json();
-        const results = data.results || [];
-        if (results.length === 0) {
-            area.innerHTML = '<p class="loading">No results for "' + esc(q) + '"</p>';
-            return;
-        }
-        let html = '';
-        results.forEach(r => {
-            html += '<div class="word-detail" style="margin-bottom:1rem;">';
-            html += '<h2 style="margin:0;">' + esc(r.lemma) + '</h2>';
-            html += '<div class="gloss">' + esc(r.gloss || '') + '</div>';
-            html += '<div class="stats-grid" style="margin:0.5rem 0;">';
-            html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.occurrence_count||0).toLocaleString() + '</div><div class="stat-label">Occurrences</div></div>';
-            html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.tablet_count||0).toLocaleString() + '</div><div class="stat-label">Tablets</div></div>';
-            html += '</div>';
-            let periods = {};
-            try { periods = JSON.parse(r.periods || '{}'); } catch(e) {}
-            let maxC = Math.max(...Object.values(periods), 1);
-            Object.entries(periods).sort((a,b) => b[1]-a[1]).slice(0,6).forEach(([p,c]) => {
-                html += '<div class="period-bar"><span class="period-label">' + esc(p) + '</span>';
-                html += '<div class="period-fill" style="width:' + Math.round(c/maxC*100) + '%;"></div>';
-                html += '<span class="period-count">' + c.toLocaleString() + '</span></div>';
-            });
-            html += '</div>';
-        });
-        area.innerHTML = html;
-    } catch(e) {
-        area.innerHTML = '<p class="error-msg">Concordance search failed</p>';
-    }
-}
-
-// Dialect distribution
-async function loadDialects() {
-    const area = document.getElementById('dialect-bars');
-    try {
-        const resp = await fetch(API + '/stats');
-        const data = await resp.json();
-        if (data.corpus && data.corpus.by_language) {
-            let langs = data.corpus.by_language;
-            let maxC = Math.max(...Object.values(langs), 1);
-            let html = '';
-            Object.entries(langs).sort((a,b) => b[1]-a[1]).forEach(([lang, count]) => {
-                let label = lang.replace('akk-x-', '').replace('akk', 'Akkadian (general)');
-                html += '<div class="period-bar"><span class="period-label">' + esc(label) + '</span>';
-                html += '<div class="period-fill" style="width:' + Math.round(count/maxC*100) + '%;"></div>';
-                html += '<span class="period-count">' + count.toLocaleString() + ' texts</span></div>';
-            });
-            area.innerHTML = html;
-        }
-    } catch(e) {
-        area.innerHTML = '<p class="error-msg">Could not load dialect data</p>';
-    }
-}
-
-// Shared pagination renderer
 function renderPagination(containerId, total, perPage, currentPage, fnName) {
-    const totalPages = Math.ceil(total / perPage);
-    let html = '';
+    var totalPages = Math.ceil(total / perPage);
+    var html = '';
     if (totalPages > 1) {
         if (currentPage > 1) html += '<button class="page-btn" onclick="' + fnName + '(' + (currentPage-1) + ')">&lt;</button>';
         html += '<span class="page-btn active">' + currentPage + ' / ' + totalPages + ' (' + total.toLocaleString() + ')</span>';
@@ -440,29 +153,309 @@ function renderPagination(containerId, total, perPage, currentPage, fnName) {
     document.getElementById(containerId).innerHTML = html;
 }
 
-// Load stats
-async function loadStats() {
-    try {
-        const resp = await fetch(API + '/stats');
-        const data = await resp.json();
-        if (data.lexicon) document.getElementById('stat-words').textContent = (data.lexicon.total || 555).toLocaleString();
-        if (data.corpus) {
-            document.getElementById('stat-texts').textContent = (data.corpus.total_texts || 9817).toLocaleString();
-            if (data.corpus.total_akkadian_words) document.getElementById('stat-tokens').textContent = data.corpus.total_akkadian_words.toLocaleString();
+/* Load initial data from static JSON */
+function loadAllData() {
+    Promise.all([
+        fetch('data/lexicon.json').then(function(r) { return r.json(); }),
+        fetch('data/stats.json').then(function(r) { return r.json(); })
+    ]).then(function(results) {
+        lexiconData = results[0];
+        statsData = results[1];
+        if (statsData.lexicon) document.getElementById('stat-words').textContent = statsData.lexicon.total_words.toLocaleString();
+        if (statsData.corpus) {
+            document.getElementById('stat-texts').textContent = statsData.corpus.total_texts.toLocaleString();
+            if (statsData.corpus.akkadian_word_tokens) document.getElementById('stat-tokens').textContent = statsData.corpus.akkadian_word_tokens.toLocaleString();
         }
-        if (data.sacred_texts) document.getElementById('stat-sacred').textContent = (data.sacred_texts.total || 932).toLocaleString();
-    } catch(e) { /* use defaults */ }
+        tabsLoaded['lexicon'] = true;
+        renderLexicon();
+    }).catch(function() {
+        document.getElementById('lex-results').innerHTML = '<p class="error-msg">Failed to load data. Try refreshing.</p>';
+    });
 }
 
-function esc(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* --- LEXICON --- */
+function debounceLex() { clearTimeout(lexTimeout); lexTimeout = setTimeout(function(){ lexPage=1; renderLexicon(); }, 300); }
+
+function filterLexicon() {
+    var q = document.getElementById('lex-search').value.trim().toLowerCase();
+    if (!q) return lexiconData;
+    return lexiconData.filter(function(w) {
+        return (w.word || '').toLowerCase().indexOf(q) >= 0 ||
+               (w.gloss || '').toLowerCase().indexOf(q) >= 0 ||
+               (w.transliteration || '').toLowerCase().indexOf(q) >= 0;
+    });
 }
 
-// Initial load
-loadStats();
-tabsLoaded['lexicon'] = true;
-loadLexicon();
+function renderLexicon(page) {
+    if (page) lexPage = page;
+    var area = document.getElementById('lex-results');
+    var filtered = filterLexicon();
+    var perPage = 30;
+    var total = filtered.length;
+    var totalPages = Math.max(1, Math.ceil(total / perPage));
+    lexPage = Math.max(1, Math.min(lexPage, totalPages));
+    var start = (lexPage - 1) * perPage;
+    var pageItems = filtered.slice(start, start + perPage);
+    if (pageItems.length === 0) {
+        area.innerHTML = '<p class="loading">No words found</p>';
+        document.getElementById('lex-pagination').innerHTML = '';
+        return;
+    }
+    var html = '';
+    pageItems.forEach(function(w) {
+        html += '<div class="lex-item" onclick="showWord(\'' + esc(w.word || '') + '\')">';
+        html += '<span class="lex-word">' + esc(w.word || '') + '</span>';
+        html += '<span class="lex-gloss"> - ' + esc(w.gloss || '') + '</span>';
+        if (w.is_divine === 'True') html += '<span class="lex-divine">Divine</span>';
+        if (w.semantic_category) html += '<span class="lex-cat">' + esc(w.semantic_category) + '</span>';
+        var meta = [];
+        if (w.gematria) meta.push('Gematria: ' + w.gematria);
+        if (w.context) meta.push(w.context);
+        if (meta.length) html += '<div class="lex-meta">' + meta.join(' | ') + '</div>';
+        html += '</div>';
+    });
+    area.innerHTML = html;
+    renderPagination('lex-pagination', total, perPage, lexPage, 'renderLexicon');
+}
+
+function showWord(word) {
+    var area = document.getElementById('lex-results');
+    var w = lexiconData.find(function(r) { return (r.word || '').toLowerCase() === word.toLowerCase(); });
+    if (!w) { area.innerHTML = '<p class="error-msg">Word not found</p>'; return; }
+    var html = '<div class="word-detail">';
+    html += '<h2>' + esc(w.word) + '</h2>';
+    html += '<div class="gloss">' + esc(w.gloss || '') + '</div>';
+    var details = [];
+    if (w.transliteration) details.push(['Transliteration', w.transliteration]);
+    if (w.gematria) details.push(['Gematria Value', w.gematria]);
+    if (w.prime_factors) details.push(['Prime Factors', w.prime_factors]);
+    if (w.pattern_type) details.push(['Pattern Type', w.pattern_type]);
+    if (w.semantic_category) details.push(['Category', w.semantic_category]);
+    if (w.is_divine === 'True') details.push(['Divine', w.divine_signature || 'Yes']);
+    if (w.context) details.push(['Period', w.context]);
+    if (details.length) {
+        html += '<div style="margin-top:1rem;">';
+        details.forEach(function(d) {
+            html += '<div style="display:flex;gap:1rem;padding:0.3rem 0;border-bottom:1px solid var(--glass-border-dim);">';
+            html += '<span style="color:var(--gold);width:140px;flex-shrink:0;">' + d[0] + '</span>';
+            html += '<span style="color:var(--silver-light);">' + esc(String(d[1])) + '</span></div>';
+        });
+        html += '</div>';
+    }
+    if (w.semantic_category) {
+        var related = lexiconData.filter(function(r) { return r.semantic_category === w.semantic_category && r.word !== w.word; }).slice(0, 12);
+        if (related.length) {
+            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Related Words (' + esc(w.semantic_category) + ')</h3>';
+            related.forEach(function(s) {
+                html += '<span class="lex-cat" style="cursor:pointer;margin:0.2rem;" onclick="showWord(\'' + esc(s.word) + '\')">' + esc(s.word) + ' - ' + esc(s.gloss || '') + '</span> ';
+            });
+        }
+    }
+    html += '</div>';
+    html += '<button class="page-btn" onclick="renderLexicon()" style="margin-top:0.5rem;">&lt; Back to lexicon</button>';
+    area.innerHTML = html;
+}
+
+/* --- TEXTS --- */
+function debounceTexts() { clearTimeout(txtTimeout); txtTimeout = setTimeout(function(){ txtPage=1; loadTexts(); }, 400); }
+
+function ensureTextsLoaded() {
+    if (textsData.length > 0) return Promise.resolve();
+    return fetch('data/texts.json').then(function(r) { return r.json(); }).then(function(d) { textsData = d; });
+}
+
+function loadTextFilters() {
+    if (!statsData || !statsData.corpus) return;
+    var periodSel = document.getElementById('txt-period');
+    var genreSel = document.getElementById('txt-genre');
+    if (statsData.corpus.periods) {
+        Object.keys(statsData.corpus.periods).sort().forEach(function(p) {
+            periodSel.innerHTML += '<option value="' + esc(p) + '">' + esc(p) + ' (' + statsData.corpus.periods[p] + ')</option>';
+        });
+    }
+    if (statsData.corpus.genres) {
+        Object.keys(statsData.corpus.genres).sort().forEach(function(g) {
+            genreSel.innerHTML += '<option value="' + esc(g) + '">' + esc(g) + ' (' + statsData.corpus.genres[g] + ')</option>';
+        });
+    }
+}
+
+function filterTexts() {
+    var period = document.getElementById('txt-period').value;
+    var genre = document.getElementById('txt-genre').value;
+    var q = document.getElementById('txt-search').value.trim().toLowerCase();
+    var filtered = textsData;
+    if (period) filtered = filtered.filter(function(t) { return (t.period || '').indexOf(period) >= 0; });
+    if (genre) filtered = filtered.filter(function(t) { return (t.genre || '').indexOf(genre) >= 0; });
+    if (q) filtered = filtered.filter(function(t) { return (t.title || '').toLowerCase().indexOf(q) >= 0; });
+    return filtered;
+}
+
+function loadTexts(page) {
+    if (page) txtPage = page; else if (!arguments.length) txtPage = 1;
+    var area = document.getElementById('text-results');
+    area.innerHTML = '<p class="loading">Loading texts...</p>';
+    ensureTextsLoaded().then(function() {
+        var filtered = filterTexts();
+        var perPage = 25;
+        var total = filtered.length;
+        var totalPages = Math.max(1, Math.ceil(total / perPage));
+        txtPage = Math.max(1, Math.min(txtPage, totalPages));
+        var start = (txtPage - 1) * perPage;
+        var pageItems = filtered.slice(start, start + perPage);
+        if (pageItems.length === 0) {
+            area.innerHTML = '<p class="loading">No texts found</p>';
+            document.getElementById('txt-pagination').innerHTML = '';
+            return;
+        }
+        var html = '<div class="text-row text-header"><span>Title</span><span>Period</span><span>Genre</span><span>Lines</span></div>';
+        pageItems.forEach(function(t) {
+            html += '<div class="text-row" onclick="viewText(\'' + esc(t.textid) + '\')">';
+            html += '<span class="text-title">' + esc(t.title || t.textid) + '</span>';
+            html += '<span class="text-meta">' + esc(t.period || '-') + '</span>';
+            html += '<span class="text-meta">' + esc(t.genre || '-') + '</span>';
+            html += '<span class="text-meta">' + (t.total_lines || 0) + '</span>';
+            html += '</div>';
+        });
+        area.innerHTML = html;
+        renderPagination('txt-pagination', total, perPage, txtPage, 'loadTexts');
+    }).catch(function() {
+        area.innerHTML = '<p class="error-msg">Could not load texts</p>';
+    });
+}
+
+function viewText(textid) {
+    var area = document.getElementById('text-results');
+    area.innerHTML = '<p class="loading">Loading text...</p>';
+    fetch('data/texts/' + encodeURIComponent(textid) + '.json').then(function(r) { return r.json(); }).then(function(t) {
+        var html = '<div class="word-detail">';
+        html += '<h2>' + esc(t.title || t.textid) + '</h2>';
+        html += '<div class="lex-meta" style="margin-bottom:1rem;">' + esc(t.period || '') + ' | ' + esc(t.genre || '') + ' | ' + esc(t.provenience || '') + '</div>';
+        if (t.lines && t.lines.length) {
+            html += '<div style="font-family:monospace;">';
+            t.lines.forEach(function(l) {
+                html += '<div style="display:flex;gap:1rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.03);">';
+                html += '<span style="color:var(--gold);width:60px;flex-shrink:0;font-size:0.8rem;">' + esc(l.line_label || '') + '</span>';
+                html += '<span style="color:var(--silver-light);font-size:0.9rem;">' + esc(l.transliteration || '') + '</span>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+        if (t.akkadian_words && t.akkadian_words.length) {
+            html += '<h3 class="text-gold" style="margin:1.5rem 0 0.5rem;">Akkadian Words (' + t.akkadian_words.length + ')</h3>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">';
+            t.akkadian_words.forEach(function(w) {
+                var label = (typeof w === 'string') ? w : (w.cf || w.form || '');
+                var gloss = (typeof w === 'object' && w.gw) ? ' (' + w.gw + ')' : '';
+                html += '<span class="lex-cat" style="cursor:default;">' + esc(label) + esc(gloss) + '</span>';
+            });
+            html += '</div>';
+        }
+        html += '</div>';
+        html += '<button class="page-btn" onclick="loadTexts(' + txtPage + ')" style="margin-top:0.5rem;">&lt; Back to texts</button>';
+        area.innerHTML = html;
+    }).catch(function() {
+        area.innerHTML = '<p class="error-msg">Failed to load text</p>';
+    });
+}
+
+/* --- SACRED TEXTS --- */
+function loadSacred() {
+    var area = document.getElementById('sacred-results');
+    area.innerHTML = '<p class="loading">Loading sacred texts...</p>';
+    var p = sacredData ? Promise.resolve(sacredData) : fetch('data/sacred.json').then(function(r) { return r.json(); }).then(function(d) { sacredData = d; return d; });
+    p.then(function(data) {
+        var texts = data.data || [];
+        var corpora = data.corpora || {};
+        if (texts.length === 0) { area.innerHTML = '<p class="loading">No sacred texts found</p>'; return; }
+        var grouped = {};
+        texts.forEach(function(t) { var c = t.corpus || 'other'; if (!grouped[c]) grouped[c] = []; grouped[c].push(t); });
+        var html = '';
+        Object.keys(grouped).forEach(function(corpus) {
+            var items = grouped[corpus];
+            var info = corpora[corpus] || {};
+            html += '<div class="sacred-card">';
+            html += '<h3>' + esc(info.name || corpus.replace(/_/g, ' ').toUpperCase()) + '</h3>';
+            if (info.description) html += '<p style="color:var(--silver-dark);font-size:0.85rem;margin-bottom:0.5rem;">' + esc(info.description) + '</p>';
+            html += '<p><span class="sacred-count">' + items.length + '</span> texts</p>';
+            html += '<div style="margin-top:0.8rem;max-height:200px;overflow-y:auto;">';
+            items.slice(0, 20).forEach(function(t) {
+                html += '<div style="padding:0.3rem 0;border-bottom:1px solid var(--glass-border-dim);cursor:pointer;" onclick="showTab(\'texts\',document.querySelectorAll(\'.tab-btn\')[1]);viewText(\'' + esc(t.textid) + '\')">';
+                html += '<span class="text-title">' + esc(t.title || t.textid) + '</span>';
+                html += '<span class="text-meta" style="margin-left:0.5rem;">' + esc(t.period || '') + '</span>';
+                html += '</div>';
+            });
+            if (items.length > 20) html += '<p class="text-meta">... and ' + (items.length - 20) + ' more</p>';
+            html += '</div></div>';
+        });
+        area.innerHTML = html;
+    }).catch(function() {
+        area.innerHTML = '<p class="error-msg">Could not load sacred texts</p>';
+    });
+}
+
+/* --- CONCORDANCE (client-side search) --- */
+function searchConc() {
+    var q = document.getElementById('conc-search').value.trim().toLowerCase();
+    if (!q) return;
+    var area = document.getElementById('conc-results');
+    area.innerHTML = '<p class="loading">Searching...</p>';
+    var p = concordanceData.length > 0 ? Promise.resolve() : fetch('data/concordance.json').then(function(r) { return r.json(); }).then(function(d) { concordanceData = d; });
+    p.then(function() {
+        var results = concordanceData.filter(function(r) {
+            return (r.lemma || '').toLowerCase().indexOf(q) >= 0 || (r.gloss || '').toLowerCase().indexOf(q) >= 0;
+        }).slice(0, 50);
+        if (results.length === 0) { area.innerHTML = '<p class="loading">No results for "' + esc(q) + '"</p>'; return; }
+        var html = '';
+        results.forEach(function(r) {
+            html += '<div class="word-detail" style="margin-bottom:1rem;">';
+            html += '<h2 style="margin:0;">' + esc(r.lemma) + '</h2>';
+            html += '<div class="gloss">' + esc(r.gloss || '') + '</div>';
+            html += '<div class="stats-grid" style="margin:0.5rem 0;">';
+            html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.occurrence_count||0).toLocaleString() + '</div><div class="stat-label">Occurrences</div></div>';
+            html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.tablet_count||0).toLocaleString() + '</div><div class="stat-label">Tablets</div></div>';
+            html += '</div>';
+            var periods = r.period_json || {};
+            if (typeof periods === 'string') try { periods = JSON.parse(periods); } catch(e) { periods = {}; }
+            var vals = Object.values(periods);
+            var maxC = vals.length ? Math.max.apply(null, vals) : 1;
+            Object.keys(periods).sort(function(a,b) { return periods[b]-periods[a]; }).slice(0,6).forEach(function(p) {
+                var c = periods[p];
+                html += '<div class="period-bar"><span class="period-label">' + esc(p) + '</span>';
+                html += '<div class="period-fill" style="width:' + Math.round(c/maxC*100) + '%;"></div>';
+                html += '<span class="period-count">' + c.toLocaleString() + '</span></div>';
+            });
+            html += '</div>';
+        });
+        area.innerHTML = html;
+    }).catch(function() {
+        area.innerHTML = '<p class="error-msg">Concordance search failed</p>';
+    });
+}
+
+/* --- DIALECTS --- */
+function loadDialects() {
+    var area = document.getElementById('dialect-bars');
+    if (!statsData || !statsData.corpus || !statsData.corpus.language_variants) {
+        area.innerHTML = '<p class="text-silver">Dialect data not available</p>';
+        return;
+    }
+    var langs = statsData.corpus.language_variants;
+    var vals = Object.values(langs);
+    var maxC = vals.length ? Math.max.apply(null, vals) : 1;
+    var html = '';
+    Object.keys(langs).sort(function(a,b) { return langs[b]-langs[a]; }).forEach(function(lang) {
+        var count = langs[lang];
+        var label = lang.replace('akk-x-', '').replace('akk', 'Akkadian (general)');
+        html += '<div class="period-bar"><span class="period-label">' + esc(label) + '</span>';
+        html += '<div class="period-fill" style="width:' + Math.round(count/maxC*100) + '%;"></div>';
+        html += '<span class="period-count">' + count.toLocaleString() + '</span></div>';
+    });
+    area.innerHTML = html;
+}
+
+/* --- BOOT --- */
+loadAllData();
 </script>
 </body>
 </html>
